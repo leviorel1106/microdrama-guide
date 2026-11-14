@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Shadows Don't Lie · The Micro Drama Workflow</title>
+<meta name="description" content="How I made Episode 1 of Shadows Don't Lie, an AI micro drama, start to finish in Kolbo. Every prompt, every step, ready to copy.">
+<meta property="og:title" content="Make your own AI micro drama · the full workflow">
+<meta property="og:description" content="Casting, character sheets, voices, multishot scenes with dialogue, Full Quality, music. All in Kolbo, all prompts included.">
+<meta property="og:image" content="media/poster.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme:dark;
+  --bg:#0c0d10; --bg2:#101114; --surface:#141619; --surface2:#1b1d21; --surface3:#24272c;
+  --ink:#f5f5f5; --ink2:#d3d6da; --muted:#b7bbc0; --line:#26282c; --line2:#3b3d40; --paper:#f2eee6; --on-paper:#111418;
+  --v1:#7a16e0; --v2:#a16cff; --cy:#2bd7d6; --amber:#F5C20C; --red:#B81418;
+  --grad:linear-gradient(97deg,#7a16e0,#008786);
+  --grad-text:linear-gradient(97deg,#a16cff,#2bd7d6);
+  --r:16px; --r-lg:24px;
+  --gut:max(18px,env(safe-area-inset-left,0px)); --gutr:max(18px,env(safe-area-inset-right,0px));
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Rubik,"Segoe UI",Arial,sans-serif;font-size:18px;line-height:1.65;-webkit-font-smoothing:antialiased;overflow-x:clip}
+img,video{max-width:100%;display:block}
+a{color:inherit}
+::selection{background:rgba(161,108,255,.45)}
+.atmo{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
+.atmo::before{content:"";position:absolute;width:90vmax;height:90vmax;top:-45vmax;right:-30vmax;background:radial-gradient(closest-side,rgba(122,22,224,.22),transparent 70%)}
+.atmo::after{content:"";position:absolute;width:70vmax;height:70vmax;bottom:-40vmax;left:-25vmax;background:radial-gradient(closest-side,rgba(0,135,134,.16),transparent 70%)}
+.wrap{max-width:1180px;margin-inline:auto;padding-left:var(--gut);padding-right:var(--gutr)}
+.narrow{max-width:820px}
+.grad-text{background:var(--grad-text);-webkit-background-clip:text;background-clip:text;color:transparent}
+.eyebrow{display:inline-flex;align-items:center;gap:10px;font-size:13px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.eyebrow::before{content:"";width:26px;height:2px;background:var(--grad)}
+
+/* bar */
+.bar{position:sticky;top:0;z-index:50;background:color-mix(in srgb,var(--bg) 82%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.bar .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:62px}
+.me{display:flex;align-items:center;gap:10px;text-decoration:none;font-weight:700;font-size:15px}
+.me img{width:36px;height:36px;border-radius:50%;box-shadow:0 0 0 2px var(--v2)}
+.me small{display:block;font-weight:500;color:var(--muted);font-size:12px;line-height:1.2}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:52px;padding:0 26px;border-radius:999px;font:700 17px/1 Rubik,sans-serif;text-decoration:none;border:0;cursor:pointer;transition:transform .15s,box-shadow .2s}
+.btn:hover{transform:translateY(-2px)}
+.btn:focus-visible,.copy:focus-visible,.code:focus-visible{outline:3px solid var(--cy);outline-offset:3px}
+.btn-primary{background:var(--paper);color:var(--on-paper);box-shadow:0 14px 40px -12px rgba(242,238,230,.35)}
+.btn-grad{background:var(--grad);color:#fff;box-shadow:0 0 0 1px rgba(161,108,255,.35),0 18px 50px -12px rgba(122,22,224,.6)}
+.btn-ghost{background:transparent;color:var(--ink);box-shadow:0 0 0 1.5px var(--line2) inset}
+.bar .btn{min-height:42px;padding:0 18px;font-size:15px}
+
+/* hero */
+.hero{padding:clamp(34px,6vw,80px) 0 clamp(30px,5vw,60px)}
+.hero .wrap{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:clamp(28px,5vw,64px);align-items:center}
+h1{font-size:clamp(42px,7vw,86px);line-height:.95;font-weight:900;letter-spacing:-.03em;margin:18px 0 20px;text-wrap:balance}
+.lead{font-size:clamp(19px,2vw,22px);color:var(--ink2);max-width:40ch;margin:0 0 28px}
+.cta-row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.phone{position:relative;justify-self:center;width:min(100%,340px);aspect-ratio:9/16;border-radius:34px;padding:10px;background:linear-gradient(160deg,#2a2c31,#0f1013);box-shadow:0 0 0 1px var(--line2),0 40px 90px -30px rgba(122,22,224,.55)}
+.phone video{width:100%;height:100%;object-fit:cover;border-radius:26px;background:#000}
+.phone .sound{position:absolute;bottom:22px;left:50%;transform:translateX(-50%);min-height:40px;padding:0 16px;font-size:14px;background:rgba(12,13,16,.72);color:#fff;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}
+.badge{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;background:var(--surface);box-shadow:0 0 0 1px var(--line2) inset;font-size:14px;color:var(--ink2);font-weight:500}
+.badge b{color:var(--ink)}
+
+/* sections */
+.sec{padding:clamp(56px,8vw,104px) 0 0}
+h2{font-size:clamp(32px,4.6vw,54px);line-height:1.02;font-weight:900;letter-spacing:-.025em;margin:14px 0 16px;text-wrap:balance}
+h3{font-size:clamp(22px,2.4vw,28px);line-height:1.15;font-weight:800;margin:0 0 10px}
+p{margin:0 0 16px}
+.muted{color:var(--muted)}
+.tldr{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:26px}
+.tldr div{padding:20px;border-radius:var(--r);background:var(--surface);box-shadow:0 0 0 1px var(--line) inset}
+.tldr b{display:block;font-size:30px;font-weight:900;line-height:1;margin-bottom:8px}
+.tldr span{color:var(--muted);font-size:15px;line-height:1.45;display:block}
+
+/* code strip (Kolbo offer) */
+.offer{margin-top:clamp(40px,6vw,64px);border-radius:var(--r-lg);padding:clamp(22px,3vw,34px);position:relative;overflow:hidden;
+  background:linear-gradient(120deg,rgba(122,22,224,.28),rgba(0,135,134,.2)),var(--surface);box-shadow:0 0 0 1px rgba(161,108,255,.35) inset}
+.offer .row{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:18px}
+.offer h3{margin:0 0 4px}
+.codes{display:flex;flex-wrap:wrap;gap:10px}
+.code{display:inline-flex;align-items:center;justify-content:space-between;min-width:280px;gap:12px;text-align:left;min-height:52px;padding:0 8px 0 18px;border-radius:14px;border:0;cursor:pointer;background:var(--bg);color:var(--ink);box-shadow:0 0 0 1.5px var(--line2) inset;font:600 15px Rubik,sans-serif}
+.code b{font-family:"JetBrains Mono",monospace;font-size:17px;letter-spacing:.04em}
+.code i{font-style:normal;font-size:13px;color:var(--muted)}
+.code .pill{background:var(--paper);color:var(--on-paper);border-radius:10px;padding:8px 12px;font-size:13px;font-weight:700}
+.fine{font-size:14px;color:var(--muted);margin:14px 0 0}
+
+/* rules */
+.rules{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:26px}
+.rule{padding:24px;border-radius:var(--r-lg);background:var(--surface);box-shadow:0 0 0 1px var(--line) inset;position:relative;overflow:hidden}
+.rule .n{font-size:64px;font-weight:900;line-height:.9;margin-bottom:12px}
+.rule p{color:var(--ink2);font-size:16px;margin:0}
+
+/* steps */
+.step{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(20px,4vw,48px);align-items:start;padding:clamp(34px,5vw,56px) 0;border-top:1px solid var(--line)}
+.step:first-of-type{border-top:0}
+.step .num{display:inline-grid;place-items:center;width:44px;height:44px;border-radius:14px;background:var(--grad);font-weight:900;font-size:19px;margin-bottom:14px}
+.tool{display:inline-flex;align-items:center;gap:8px;margin:0 0 14px;padding:6px 12px;border-radius:999px;font-size:13px;font-weight:700;letter-spacing:.04em;background:rgba(43,215,214,.1);color:var(--cy);box-shadow:0 0 0 1px rgba(43,215,214,.35) inset}
+.step ul{margin:0 0 16px;padding-left:20px;color:var(--ink2)}
+.step li{margin:0 0 6px}
+.shots{display:grid;gap:10px}
+.shots.c2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.shots.c3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.shots figure{margin:0}
+.shots img{width:100%;border-radius:14px;box-shadow:0 0 0 1px var(--line2)}
+.shots .tall img{aspect-ratio:9/16;object-fit:cover}
+.shots figcaption{font-size:14px;color:var(--muted);margin-top:6px;line-height:1.4}
+
+/* prompt */
+.prompt{position:relative;margin:14px 0 0;border-radius:var(--r);background:#08090b;box-shadow:0 0 0 1px var(--line2) inset;overflow:hidden}
+.prompt-h{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 10px 10px 16px;border-bottom:1px solid var(--line);background:var(--surface)}
+.prompt-h span{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.prompt pre{margin:0;padding:16px;max-height:300px;overflow:auto;white-space:pre-wrap;word-break:break-word;font:13.5px/1.6 "JetBrains Mono",monospace;color:#e6e7ea}
+.prompt.long pre{max-height:420px}
+.copy{min-height:40px;padding:0 16px;border-radius:999px;border:0;cursor:pointer;background:var(--paper);color:var(--on-paper);font:700 14px Rubik,sans-serif}
+.copy.done{background:var(--cy)}
+.note{margin-top:14px;padding:14px 16px;border-radius:14px;background:rgba(245,194,12,.08);box-shadow:0 0 0 1px rgba(245,194,12,.3) inset;font-size:15px;color:var(--ink2)}
+.note b{color:var(--amber)}
+
+/* mistakes */
+.miss{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:26px}
+.miss div{padding:22px;border-radius:var(--r-lg);background:var(--surface);box-shadow:0 0 0 1px var(--line) inset}
+.miss b{display:block;font-size:19px;margin-bottom:6px}
+.miss .x{color:#ff7a7a;font-weight:800}
+.miss .ok{color:var(--cy);font-weight:800}
+.miss p{margin:0 0 10px;font-size:16px;color:var(--ink2)}
+
+/* final */
+.final{margin:clamp(64px,9vw,120px) 0 0;padding:clamp(40px,6vw,72px) 0;background:radial-gradient(80% 90% at 50% 0%,rgba(122,22,224,.32),transparent 70%),var(--bg2);border-top:1px solid var(--line)}
+.final .wrap{text-align:center}
+.final h2{font-size:clamp(36px,5.4vw,66px)}
+.final .lead{margin-inline:auto;max-width:46ch}
+.final .codes{justify-content:center;margin:26px 0 8px}
+.steps3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;max-width:900px;margin:28px auto 0;text-align:left}
+.steps3 div{padding:18px;border-radius:var(--r);background:var(--surface);box-shadow:0 0 0 1px var(--line) inset;font-size:16px;color:var(--ink2)}
+.steps3 b{display:block;color:var(--ink);font-size:17px;margin-bottom:4px}
+footer{padding:34px 0 60px;color:var(--muted);font-size:14px}
+footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;align-items:center}
+.toast{position:fixed;left:50%;bottom:max(24px,env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(120px);background:var(--paper);color:var(--on-paper);padding:12px 20px;border-radius:999px;font-weight:700;font-size:15px;transition:transform .25s;z-index:80}
+.toast.on{transform:translateX(-50%) translateY(0)}
+
+@media (max-width:900px){
+  .hero .wrap{grid-template-columns:minmax(0,1fr)}
+  .phone{width:min(78vw,320px)}
+  .tldr{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .rules,.miss,.steps3{grid-template-columns:minmax(0,1fr)}
+  .step{grid-template-columns:minmax(0,1fr)}
+  .bar .hide-s{display:none}
+}
+@media (prefers-reduced-motion:reduce){.btn:hover{transform:none}}
+</style>
+</head>
+<body>
+<div class="atmo"></div>
+
+<header class="bar"><div class="wrap">
+  <a class="me" href="https://www.instagram.com/leviorel/" target="_blank" rel="noopener"><img src="media/avatar.jpg" alt="Orel Levi"><span>Orel Levi<small>@leviorel · AI Content Creator</small></span></a>
+  <a class="btn btn-primary" href="https://app.kolbo.ai?via=orellevi" target="_blank" rel="noopener">Try Kolbo<span class="hide-s">&nbsp;· 50% off</span></a>
+</div></header>
+
+<section class="hero"><div class="wrap">
+  <div>
+    <span class="eyebrow">Free workflow · AI micro drama</span>
+    <h1>Make your own<br><span class="grad-text">micro drama.</span></h1>
+    <p class="lead">This is exactly how I made Episode 1 of <b>Shadows Don't Lie</b>: casting, faces that stay the same, voices, scenes with real dialogue, music. All of it in Kolbo, every prompt ready to copy.</p>
+    <div class="cta-row">
+      <a class="btn btn-grad" href="#steps">Show me the workflow</a>
+      <a class="btn btn-ghost" href="https://app.kolbo.ai?via=orellevi" target="_blank" rel="noopener">Open Kolbo</a>
+    </div>
+    <div class="badges">
+      <span class="badge"><b>50s</b> episode</span>
+      <span class="badge"><b>4</b> scene runs</span>
+      <span class="badge"><b>2</b> actors, 0 cameras</span>
+      <span class="badge">Made with <b>Kolbo AI</b></span>
+    </div>
+  </div>
+  <div class="phone">
+    <video id="ep" src="media/episode1.mp4" poster="media/poster.jpg" autoplay muted loop playsinline preload="metadata"></video>
+    <button class="btn sound" id="snd" type="button">Tap for sound</button>
+  </div>
+</div></section>
+
+<section class="sec"><div class="wrap">
+  <span class="eyebrow">The short version</span>
+  <h2>One idea, two faces, <span class="grad-text">four 15-second runs.</span></h2>
+  <p class="lead" style="max-width:60ch">A micro drama is a whole series told in under a minute per episode. You don't need a crew. You need a sharp idea, characters the model can't forget, and scenes written like a director talks.</p>
+  <div class="tldr">
+    <div><b>01</b><span>An idea you can say in one line</span></div>
+    <div><b>02</b><span>Cast and lock the faces</span></div>
+    <div><b>03</b><span>Voices, then scenes with dialogue</span></div>
+    <div><b>04</b><span>Full Quality, music, edit</span></div>
+  </div>
+
+  <div class="offer">
+    <div class="row">
+      <div><h3>Everything here runs on Kolbo.</h3><p class="muted" style="margin:0">Midjourney, Nano Banana Pro, Seed Audio, Seedance 2.5 and Suno in one place. Start with my discount:</p></div>
+      <div class="codes">
+        <button class="code" type="button" data-copytext="ORELLEVI50"><span><b>ORELLEVI50</b><br><i>50% off your first month</i></span><span class="pill">Copy</span></button>
+        <button class="code" type="button" data-copytext="ORELLEVI30"><span><b>ORELLEVI30</b><br><i>30% off for 3 months</i></span><span class="pill">Copy</span></button>
+      </div>
+    </div>
+    <p class="fine">Codes work on your first purchase of a monthly plan. Sign up through <a href="https://app.kolbo.ai?via=orellevi" target="_blank" rel="noopener">my link</a>, accept the cookies on Kolbo's site and enter the code at checkout.</p>
+  </div>
+</div></section>
+
+<section class="sec"><div class="wrap">
+  <span class="eyebrow">Before you start</span>
+  <h2>Three rules that <span class="grad-text">made it work.</span></h2>
+  <div class="rules">
+    <div class="rule"><div class="n grad-text">1</div><h3>A small truth in a big world</h3><p>The episodes that travel are about something everyone knows, like saying "I'm over you" when you're not, set in a world that looks like nothing else. The shadows here say what the couple won't.</p></div>
+    <div class="rule"><div class="n grad-text">2</div><h3>Faces first, film later</h3><p>Never write a scene before the characters are locked. A character sheet from three angles is what keeps the same face in every shot.</p></div>
+    <div class="rule"><div class="n grad-text">3</div><h3>Write it like a director</h3><p>Second by second: who is where, what the camera does, what is said and how. Describe what should happen. The model fills every gap with a guess.</p></div>
+  </div>
+</div></section>
+
+<section class="sec" id="steps"><div class="wrap">
+  <span class="eyebrow">Step by step</span>
+  <h2>The full workflow, <span class="grad-text">in Kolbo.</span></h2>
+
+  <div class="step">
+    <div>
+      <span class="num">1</span><h3>Write the episode in four beats</h3>
+      <p>Split your episode into scenes of about 15 seconds. Each scene is one generation. Ours:</p>
+      <ul>
+        <li><b>0-15s</b> the breakup, while the shadows slap and beg</li>
+        <li><b>15-29s</b> "I'm over us", while the shadows embrace</li>
+        <li><b>29-37s</b> "Can we talk in the dark?" and the lights go out</li>
+        <li><b>37-50s</b> lights on: they kiss, the shadows turn away</li>
+      </ul>
+      <p>Put the series name on screen in the first two seconds and end on a dry last line. That last line is what makes people wait for Episode 2.</p>
+    </div>
+    <div class="shots c2 tall">
+      <figure><img src="media/f_0.8.jpg" alt="Vivian and Jack face each other, their shadows on the coral wall" loading="lazy"><figcaption>Beat 1: polite smiles, honest shadows</figcaption></figure>
+      <figure><img src="media/f_41.5.jpg" alt="The couple kisses while the shadows stand apart" loading="lazy"><figcaption>Beat 4: the reversal</figcaption></figure>
+    </div>
+  </div>
+
+  <div class="step">
+    <div>
+      <span class="num">2</span><span class="tool">MIDJOURNEY · IN KOLBO</span><h3>Cast your actors and build the world</h3>
+      <p>Midjourney gives the glossy, cinematic look. Generate each character and the empty room separately, with the same style words at the end of every prompt so they belong to one film.</p>
+      <div class="prompt"><div class="prompt-h"><span>Character prompt</span><button class="copy" type="button" data-copy="p-cast">Copy</button></div><pre id="p-cast">medium close-up portrait of a glamorous woman of 27 with a sleek glossy jet-black chin-length bob and short fringe, bold winged eyeliner, glossy red lips, wearing a theatrical retro-futuristic cream satin dress with a cherry-red stripe, a sculpted chrome collar and chrome belt, arms folded, proud dry half smile, standing in a bright retro-futuristic living room with a huge window, chrome globe lamps and a potted palm, 1960s Technicolor Hollywood glamour film still, retro-futuristic world, bright high-key daylight, vivid clean saturated colours, cherry red, turquoise, coral, mint and chrome, luminous porcelain skin, sparkling eyes, glossy and crisp, Kodachrome postcard</pre></div>
+      <div class="prompt"><div class="prompt-h"><span>Empty set prompt</span><button class="copy" type="button" data-copy="p-room">Copy</button></div><pre id="p-room">empty retro-futuristic 1960s living room, no people, glossy mint terrazzo floor, curved peach velvet sofa, chrome globe lamps, turquoise ceramics, potted palms, a huge curved window onto a futuristic pastel city and blue sky, and one smooth plain coral-peach wall with bright hard sunlight across it, 1960s Technicolor Hollywood glamour film still, retro-futuristic world, bright high-key daylight, vivid clean saturated colours, cherry red, turquoise, coral, mint and chrome, luminous porcelain skin, sparkling eyes, glossy and crisp, Kodachrome postcard</pre></div>
+    </div>
+    <div class="shots c3 tall">
+      <figure><img src="media/cast_vivian.jpg" alt="Vivian" loading="lazy"><figcaption>Vivian</figcaption></figure>
+      <figure><img src="media/cast_jack.jpg" alt="Jack" loading="lazy"><figcaption>Jack</figcaption></figure>
+      <figure><img src="media/room.jpg" alt="The retro-futuristic living room" loading="lazy"><figcaption>The set</figcaption></figure>
+    </div>
+  </div>
+
+  <div class="step">
+    <div>
+      <span class="num">3</span><span class="tool">NANO BANANA PRO · IN KOLBO</span><h3>Lock the faces with character sheets</h3>
+      <p>Midjourney is great for the look but won't hold a face. So take the image you chose and give it to Nano Banana Pro as the reference: it keeps the exact face and builds a sheet from three angles. These sheets are what the video model reads.</p>
+      <div class="prompt"><div class="prompt-h"><span>Character sheet prompt</span><button class="copy" type="button" data-copy="p-sheet">Copy</button></div><pre id="p-sheet">CHARACTER SHEET, 16:9, three panels side by side separated by thin white gutters on a plain warm light-grey studio background: LEFT a tight head-and-shoulders close-up, MIDDLE a full-body standing shot from the FRONT head to feet, RIGHT a full-body standing shot from the BACK head to feet; same person, same costume in all three. No text, no labels. Image 1 is this exact person: keep the face, eyes, nose, mouth, makeup, hair and costume IDENTICAL, the same human being. VIVIAN, 27: sleek glossy jet-black chin-length bob with a short fringe, bold winged eyeliner, glossy red lips; long-sleeved cream satin retro-futuristic dress with a broad cherry-red vertical stripe, a sculpted mirror-chrome collar and a chrome belt, cream pointed heels. Keep EXACTLY the look of the reference images: 1960s Technicolor Hollywood glamour, bright high-key light, vivid clean saturated colour, glossy satin and chrome, luminous porcelain skin, crisp and polished, like a Midjourney film still.</pre></div>
+      <div class="note"><b>Tip:</b> make one more image of every prop that matters to the story, like her suitcase. Anything you don't give as a reference will look different in every shot.</div>
+    </div>
+    <div class="shots">
+      <figure><img src="media/sheet_vivian.jpg" alt="Vivian character sheet" loading="lazy"></figure>
+      <figure><img src="media/sheet_jack.jpg" alt="Jack character sheet" loading="lazy"><figcaption>Close-up, front, back. Same person, same costume.</figcaption></figure>
+    </div>
+  </div>
+
+  <div class="step">
+    <div>
+      <span class="num">4</span><span class="tool">SEED AUDIO · IN KOLBO</span><h3>Give each character a voice</h3>
+      <p>Seed Audio creates a voice from the character's image. Have them say a line that is <b>not</b> in your episode. You'll use this clip only as the voice identity, so the model never repeats it in the scene.</p>
+      <div class="prompt"><div class="prompt-h"><span>Voice prompt (with the character image)</span><button class="copy" type="button" data-copy="p-voice">Copy</button></div><pre id="p-voice">The woman in the reference image speaks. She is Vivian, 27, sophisticated and self-controlled, dry wit, a cool mid-Atlantic 1960s film-star diction, low and smooth, amused and a little superior, on the phone with her sister. Clean studio recording. No telephone filter. No music. No background noise.
+She says: &quot;Darling, I told him twice. The curtains stay. The cactus goes. And no, I am not discussing the cactus again.&quot;</pre></div>
+    </div>
+    <div class="shots c2 tall">
+      <figure><img src="media/f_3.2.jpg" alt="Vivian close-up" loading="lazy"><figcaption>"Well. This was mature."</figcaption></figure>
+      <figure><img src="media/f_46.jpg" alt="Jack and Vivian after the kiss" loading="lazy"><figcaption>"Completely, huh?"</figcaption></figure>
+    </div>
+  </div>
+
+  <div class="step">
+    <div>
+      <span class="num">5</span><span class="tool">SEEDANCE 2.5 · MULTISHOT · IN KOLBO</span><h3>Shoot each scene in one run</h3>
+      <p>This is the heart of it. One Seedance 2.5 run, 15 seconds, Multishot on, six shots with cuts, and the dialogue written right inside the prompt. Give it the references in a fixed order and tell it what each one is for.</p>
+      <ul>
+        <li>Image 1-4: faces and sheets of both characters</li>
+        <li>Image 5-7: the wall, the room, the prop</li>
+        <li>Image 8: one "look" image for the whole film</li>
+        <li>Audio 1-2: the voices from step 4</li>
+      </ul>
+      <div class="prompt long"><div class="prompt-h"><span>Scene 1 · the real prompt</span><button class="copy" type="button" data-copy="p-scene">Copy</button></div><pre id="p-scene">6 connected cinematic shots, 15 seconds total, vertical 9:16, Multishot ON. A glossy 1960s Technicolor romantic comedy. VIVIAN and JACK, a couple who just broke up, stand calmly in a retro-futuristic living room. Far behind them, on a coral-peach wall, their two SHADOWS perform like a silent shadow-puppet theatre and act out what the couple really feels.
+
+REFERENCES. @Image 1 is VIVIAN&#x27;s face and @Image 2 her full look from front and back: a glamorous woman of 27, sleek glossy jet-black chin-length bob with a short fringe, bold winged eyeliner, glossy red lips; a long-sleeved cream satin retro-futuristic dress with a broad cherry-red vertical stripe, a sculpted mirror-chrome collar and a chrome belt, cream heels. @Image 3 is JACK&#x27;s face and @Image 4 his full look: a boyish man of 32, wavy auburn-brown hair, clean-shaven, warm hazel eyes; a glossy pale-mint satin suit with fine chrome piping over a cream shirt, cream loafers. @Image 5 is the plain coral-peach shadow wall with the glossy mint floor in front of it, and @Image 6 is the whole retro-futuristic living room (curved coral velvet sofas, chrome globe lamps, palms, a huge curved window onto a pastel futuristic city). @Image 7 is the small cream suitcase with a red stripe and chrome handle. @Image 8 is the LOOK reference for the whole film: copy its bright Technicolor glamour light, colour, satin sheen and crisp image exactly. @Audio 1 is only Vivian&#x27;s voice identity, @Audio 2 only Jack&#x27;s; never speak the words heard in them.
+
+STAGING. Vivian and Jack stand facing each other in the FOREGROUND of the room, about one metre apart. The coral-peach wall is THREE METRES BEHIND them in the background. A hard bright sun from camera-left throws their shadows onto that far wall, where the shadows are large, flat, crisp and dark, clearly separate from the people, with empty wall around them. Vivian&#x27;s arms are folded across her chest for the whole film. Her suitcase stands on the floor right at her feet, touching her right shoe, in every shot. Jack&#x27;s hands rest in his jacket pockets for the whole film. The people are calm and composed; the shadows on the far wall are the expressive ones.
+
+MOTION: the people move subtly and naturally in real time: breathing, blinking, swallowing, small glances, tiny smiles. The shadows on the far wall move with clear, simple, readable gestures. Everything else is still.
+CAMERA: eye level, steady tripod or slow dolly push-in, 50mm for two-shots, 85mm for close-ups.
+LIGHT: bright clear daylight, high-key and airy, soft frontal beauty light on the faces; a hard white sun from camera-left paints the far wall with the crisp shadows. No golden haze, no yellow cast. Light, colour and exposure stay consistent across all shots.
+STYLE: 1960s Hollywood Technicolor glamour exactly like @Image 8, a bright high-key Kodachrome postcard: vivid clean saturated colour (cherry red, turquoise, coral, mint), deep clean blacks, luminous smooth skin, sparkling eyes, crisp sharp image. [no subtitles] [no text overlays] [no captions] [clean frame]
+
+[0:00-0:02] SHOT 1. Two-shot from the waist up, eye level, 50mm, locked-off: Vivian on the left, Jack on the right, in profile facing each other in the foreground, both smiling politely; behind and between them, the far coral wall with their two shadows. On the far wall, Vivian&#x27;s shadow swings its arm in a big theatrical slap at the shadow of Jack&#x27;s head; Jack&#x27;s shadow head tips slightly and settles. In the foreground both people keep their polite smiles; Vivian&#x27;s arms stay folded; Jack only blinks. A dry crisp slap sound, then a light bossa nova guitar begins.
+[0:02-0:04.5] SHOT 2. Over Jack&#x27;s shoulder onto Vivian, 85mm, slow push-in. Her arms folded, a cool controlled smile, she swallows once, her jaw tightens. VIVIAN, dry, smooth mid-Atlantic diction: &quot;Well. This was mature.&quot; The fake smile never reaches her eyes.
+[0:04.5-0:07] SHOT 3. Back to the Shot 1 two-shot, same framing and light. JACK, warm, trying to sound casual: &quot;Very mature.&quot; Right after his line, on the far wall, Vivian&#x27;s shadow swings a second theatrical slap at the shadow of Jack&#x27;s head; his shadow head tips slightly and settles. In the foreground the people stay calm; Jack blinks once. A second dry slap sound.
+[0:07-0:09.5] SHOT 4. Medium close-up of Jack over Vivian&#x27;s shoulder, 85mm. His eyes drop to the floor and come back up to her, a nervous half laugh. JACK, softly, hopeful: &quot;No hard feelings?&quot; His eyebrows lift a little, waiting.
+[0:09.5-0:12] SHOT 5. Back to the Shot 1 two-shot, same framing and light. On the far wall, Jack&#x27;s shadow sinks onto both knees in front of Vivian&#x27;s shadow and presses its palms together, begging. In the foreground Vivian&#x27;s eyes slide to the wall and back to Jack, unimpressed. VIVIAN, flat and dry: &quot;Tell him to get up.&quot;
+[0:12-0:15] SHOT 6. Close-up of Jack, 85mm, the far wall softly behind him with his kneeling shadow. He turns his face a little away from Vivian and presses his lips together. JACK, quietly, offended: &quot;We&#x27;re not speaking.&quot; He glances back at her to see if it landed. The bossa nova keeps playing.
+
+AVOID (things that broke before): a real arm reaching toward a face, any contact between the two people, Jack&#x27;s real head moving when his shadow is hit, shadows fading or vanishing, a shadow thrown far backwards, people looking into the lens.
+
+Also avoid: the suitcase standing anywhere except at Vivian&#x27;s feet.</pre></div>
+    </div>
+    <div class="shots c2 tall">
+      <figure><img src="media/look.jpg" alt="Look reference" loading="lazy"><figcaption>Image 8: the one look reference</figcaption></figure>
+      <figure><img src="media/f_10.5.jpg" alt="Jack's shadow kneeling" loading="lazy"><figcaption>Shot 5 of the run: his shadow begs</figcaption></figure>
+      <figure><img src="media/prop.jpg" alt="The suitcase prop" loading="lazy"><figcaption>Image 7: the prop</figcaption></figure>
+      <figure><img src="media/f_21.jpg" alt="The shadows embrace" loading="lazy"><figcaption>Scene 2: the shadows embrace</figcaption></figure>
+    </div>
+  </div>
+
+  <div class="step">
+    <div>
+      <span class="num">6</span><span class="tool">DRAFT → FULL QUALITY</span><h3>Draft first, then Full Quality</h3>
+      <p>Run every scene as a 480p draft. It's fast and cheap, so you can try two takes and keep the better one. Only when the whole episode works, send the approved drafts to <b>Full Quality</b> in Kolbo. It renders the same take again in native 1080p.</p>
+      <div class="note"><b>Important:</b> drafts you plan to finish in Full Quality should be made with image and audio references only, no reference video.</div>
+    </div>
+    <div class="shots"><figure><img src="media/poster.jpg" alt="Final frame in 1080p" loading="lazy" style="aspect-ratio:9/12;object-fit:cover"><figcaption>The final episode, rendered again in 1080p</figcaption></figure></div>
+  </div>
+
+  <div class="step">
+    <div>
+      <span class="num">7</span><span class="tool">SUNO · IN KOLBO</span><h3>Score it, then edit</h3>
+      <p>Write the music prompt to your episode's timeline: quiet under dialogue, bigger where nobody talks, silent where silence is the joke. Then cut it in so it stops and starts on the exact frames.</p>
+      <div class="prompt"><div class="prompt-h"><span>Music prompt</span><button class="copy" type="button" data-copy="p-music">Copy</button></div><pre id="p-music">Slow sultry 1960s film-noir romance score, mysterious and seductive, 68 BPM, D minor. Instruments ONLY: solo Harmon-muted trumpet, upright bass, brushed snare and ride cymbal, soft vibraphone. [0:00-0:20] upright bass alone with slow brushes, smoky and secretive, the trumpet silent. [0:20-0:25] the muted trumpet sings one long sultry phrase, like a secret confession. [0:25-0:33] back to bass and brushes, slow and tense. [0:33-0:40] only a soft ride cymbal shimmer. [0:40-0:45] the trumpet returns warm and full with the vibraphone, a romantic sigh. [0:45-0:49] one hanging vibraphone chord. [0:49-0:50] a single soft low bass note to close. Late-night club sound, dry and intimate. Instrumental only. No vocals, no choir.</pre></div>
+      <p style="margin-top:16px">Last touches: the title and "Season 1 · Episode 1" in the first seconds, and big bold subtitles for social.</p>
+    </div>
+    <div class="shots c2 tall">
+      <figure><img src="media/f_41.5.jpg" alt="The kiss" loading="lazy"><figcaption>Music returns when the lights come on</figcaption></figure>
+      <figure><img src="media/f_46.jpg" alt="The last line" loading="lazy"><figcaption>One soft note on the last line</figcaption></figure>
+    </div>
+  </div>
+</div></section>
+
+<section class="sec"><div class="wrap">
+  <span class="eyebrow">Learn from my takes</span>
+  <h2>What broke, <span class="grad-text">and what fixed it.</span></h2>
+  <div class="miss">
+    <div><b>The shadow touched the actor</b><p><span class="x">Broke:</span> writing "don't touch his face". The model read "touch" and did it.</p><p><span class="ok">Fixed:</span> describing what does happen: her arms stay folded, his hands stay in his pockets.</p></div>
+    <div><b>Shadow and body merged</b><p><span class="x">Broke:</span> tight framing with the wall right behind them. The model couldn't tell the shadow from the person.</p><p><span class="ok">Fixed:</span> the wall three metres back, shadows in the empty space between them.</p></div>
+    <div><b>More words, worse result</b><p><span class="x">Broke:</span> adding a long continuity paragraph to a prompt that already worked.</p><p><span class="ok">Fixed:</span> keep the take that works as the base and change one thing at a time.</p></div>
+  </div>
+</div></section>
+
+<section class="final" id="start"><div class="wrap">
+  <span class="eyebrow">Your turn</span>
+  <h2>Make Episode 1 of <span class="grad-text">your series.</span></h2>
+  <p class="lead">Every tool on this page lives in Kolbo. Sign up through my link and take the discount for your first month.</p>
+  <a class="btn btn-grad" href="https://app.kolbo.ai?via=orellevi" target="_blank" rel="noopener">Start on Kolbo</a>
+  <div class="codes">
+    <button class="code" type="button" data-copytext="ORELLEVI50"><span><b>ORELLEVI50</b><br><i>50% off your first month</i></span><span class="pill">Copy</span></button>
+    <button class="code" type="button" data-copytext="ORELLEVI30"><span><b>ORELLEVI30</b><br><i>30% off for 3 months</i></span><span class="pill">Copy</span></button>
+  </div>
+  <div class="steps3">
+    <div><b>1. Sign up</b>Through <a href="https://app.kolbo.ai?via=orellevi" target="_blank" rel="noopener">my link</a> and accept the cookies on the site.</div>
+    <div><b>2. Pick a monthly plan</b>The codes work on your first purchase.</div>
+    <div><b>3. Enter the code</b>At checkout. Then come back here and start with step 1.</div>
+  </div>
+  <p class="fine" style="margin-top:28px">Made something? Tag <b>@leviorel</b> and <b>@kolbo.ai</b>, I want to see it.</p>
+</div></section>
+
+<footer><div class="wrap"><span>Orel Levi · <a href="https://www.instagram.com/leviorel/" target="_blank" rel="noopener">@leviorel</a></span><span>Shadows Don't Lie · Season 1 · Made with Kolbo AI</span></div></footer>
+<div class="toast" id="toast">Copied</div>
+
+<script>
+const toast=document.getElementById('toast');let tt;
+function flash(msg){toast.textContent=msg;toast.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>toast.classList.remove('on'),1600)}
+async function copyText(t){try{await navigator.clipboard.writeText(t);return true}catch(e){const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();let ok=false;try{ok=document.execCommand('copy')}catch(_){}a.remove();return ok}}
+document.querySelectorAll('.copy').forEach(b=>b.addEventListener('click',async()=>{const ok=await copyText(document.getElementById(b.dataset.copy).textContent);b.textContent=ok?'Copied':'Select & copy';b.classList.toggle('done',ok);flash(ok?'Prompt copied':'Select the text to copy');setTimeout(()=>{b.textContent='Copy';b.classList.remove('done')},1800)}));
+document.querySelectorAll('[data-copytext]').forEach(b=>b.addEventListener('click',async()=>{const ok=await copyText(b.dataset.copytext);flash(ok?b.dataset.copytext+' copied':'Code: '+b.dataset.copytext)}));
+const v=document.getElementById('ep'),s=document.getElementById('snd');
+s.addEventListener('click',()=>{v.muted=!v.muted;if(!v.muted){v.currentTime=0;v.play()}s.textContent=v.muted?'Tap for sound':'Sound on'});
+</script>
+</body>
+</html>
